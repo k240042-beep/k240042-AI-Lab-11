@@ -1,0 +1,108 @@
+# TASK # 2
+# VEHICLE SEGMENTATION USING K-MEANS
+print("\n================ TASK # 2 =================\n")
+# CREATE VEHICLE DATAFRAME
+vehicle_data = {
+    'vehicle_serial_no': [5, 3, 8, 2, 4, 7, 6, 10, 1, 9],
+    'mileage': [150000, 120000, 250000, 80000, 100000,
+                220000, 180000, 300000, 75000, 280000],
+    'fuel_efficiency': [15, 18, 10, 22, 20,
+                        12, 16, 8, 24, 9],
+    'maintenance_cost': [5000, 4000, 7000, 2000, 3000,
+                         6500, 5500, 8000, 1500, 7500],
+    'vehicle_type': ['SUV', 'Sedan', 'Truck', 'Hatchback',
+                     'Sedan', 'Truck', 'SUV', 'Truck',
+                     'Hatchback', 'SUV']
+}
+
+df = pd.DataFrame(vehicle_data)
+
+print("Original Vehicle Dataset:\n")
+print(df)
+
+# ------------------------------------------------------------
+# ENCODE CATEGORICAL FEATURE
+# ------------------------------------------------------------
+
+encoder = LabelEncoder()
+
+df['vehicle_type_encoded'] = encoder.fit_transform(df['vehicle_type'])
+
+# ------------------------------------------------------------
+# SELECT FEATURES
+# ------------------------------------------------------------
+
+X_vehicle = df[['mileage',
+                'fuel_efficiency',
+                'maintenance_cost',
+                'vehicle_type_encoded']]
+
+# ============================================================
+# PART A: WITHOUT SCALING
+# ============================================================
+
+kmeans_vehicle_no_scaling = KMeans(n_clusters=3, random_state=42)
+
+df['Cluster_No_Scaling'] = kmeans_vehicle_no_scaling.fit_predict(X_vehicle)
+
+print("\nVehicle Clusters WITHOUT Scaling:\n")
+print(df[['vehicle_serial_no', 'Cluster_No_Scaling']])
+
+# ============================================================
+# PART B: WITH SCALING
+# Scale numerical features only
+# ============================================================
+
+X_vehicle_scaled = X_vehicle.copy()
+
+scaler = StandardScaler()
+
+columns_scale = ['mileage',
+                 'fuel_efficiency',
+                 'maintenance_cost']
+
+X_vehicle_scaled[columns_scale] = scaler.fit_transform(
+    X_vehicle_scaled[columns_scale]
+)
+
+# ------------------------------------------------------------
+# APPLY K-MEANS
+# ------------------------------------------------------------
+
+kmeans_vehicle_scaled = KMeans(n_clusters=3, random_state=42)
+
+df['Cluster_With_Scaling'] = kmeans_vehicle_scaled.fit_predict(
+    X_vehicle_scaled
+)
+
+print("\nVehicle Clusters WITH Scaling:\n")
+print(df[['vehicle_serial_no', 'Cluster_With_Scaling']])
+
+# ============================================================
+# COMPARISON
+# ============================================================
+
+print("\nComparison of Vehicle Clusters:\n")
+print(df[['vehicle_serial_no',
+          'Cluster_No_Scaling',
+          'Cluster_With_Scaling']])
+
+# ============================================================
+# INSIGHTS
+# ============================================================
+
+print("\nINSIGHTS:")
+print("""
+1. Without scaling:
+   - Mileage dominates because it has very large values.
+   - Fuel efficiency and maintenance cost contribute less.
+
+2. With scaling:
+   - All numerical features contribute equally.
+   - Vehicle grouping becomes more balanced.
+   - Similar usage patterns are identified better.
+
+3. Vehicle type:
+   - Encoded as numeric values.
+   - Not scaled because it represents categories.
+""")
