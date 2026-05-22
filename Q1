@@ -1,0 +1,101 @@
+
+# LAB TASKS - K-MEANS CLUSTERING
+# IMPORT REQUIRED LIBRARIES
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.metrics import silhouette_score
+
+# ============================================================
+# TASK # 1
+# CUSTOMER SEGMENTATION USING ALL FEATURES
+# ============================================================
+
+print("\n================ TASK # 1 =================\n")
+
+# ------------------------------------------------------------
+# SAMPLE CUSTOMER DATA
+# ------------------------------------------------------------
+
+customer_data = {
+    'customer_id': [1,2,3,4,5,6,7,8,9,10],
+    'age': [22,25,47,52,46,56,48,30,34,40],
+    'annual_income': [15000,29000,48000,65000,52000,72000,61000,32000,41000,58000],
+    'spending_score': [39,81,6,77,40,76,6,94,50,60],
+    'savings': [2000,4000,10000,15000,12000,18000,14000,5000,7000,13000]
+}
+
+df_customer = pd.DataFrame(customer_data)
+
+print("Original Customer Dataset:\n")
+print(df_customer)
+
+# ------------------------------------------------------------
+# USING ALL FEATURES EXCEPT customer_id
+# ------------------------------------------------------------
+
+X = df_customer.drop('customer_id', axis=1)
+
+# ============================================================
+# PART A: K-MEANS WITHOUT SCALING
+# ============================================================
+
+kmeans_no_scaling = KMeans(n_clusters=3, random_state=42)
+df_customer['Cluster_No_Scaling'] = kmeans_no_scaling.fit_predict(X)
+
+print("\nClusters WITHOUT Scaling:\n")
+print(df_customer[['customer_id', 'Cluster_No_Scaling']])
+
+# ============================================================
+# PART B: K-MEANS WITH SCALING
+# Scale all features EXCEPT age
+# ============================================================
+
+scaler = StandardScaler()
+
+X_scaled = X.copy()
+
+# Scale selected columns
+columns_to_scale = ['annual_income', 'spending_score', 'savings']
+
+X_scaled[columns_to_scale] = scaler.fit_transform(X_scaled[columns_to_scale])
+
+# Apply K-Means
+kmeans_scaled = KMeans(n_clusters=3, random_state=42)
+df_customer['Cluster_With_Scaling'] = kmeans_scaled.fit_predict(X_scaled)
+
+print("\nClusters WITH Scaling:\n")
+print(df_customer[['customer_id', 'Cluster_With_Scaling']])
+
+# ============================================================
+# COMPARISON
+# ============================================================
+
+print("\nComparison of Clusters:\n")
+print(df_customer[['customer_id',
+                   'Cluster_No_Scaling',
+                   'Cluster_With_Scaling']])
+
+# ============================================================
+# COMMENTS / INSIGHTS
+# ============================================================
+
+print("\nINSIGHTS:")
+print("""
+1. Without scaling:
+   - Features with larger values such as annual_income and savings
+     dominate the clustering process.
+   - Spending score and age have less impact.
+
+2. With scaling:
+   - All scaled features contribute more equally.
+   - Clusters become more balanced and meaningful.
+   - Customer behavior patterns are captured better.
+
+3. Age was not scaled:
+   - Its original values remain preserved.
+   - This can be useful when age interpretation is important.
+""")
