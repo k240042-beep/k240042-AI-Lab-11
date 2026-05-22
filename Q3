@@ -1,0 +1,127 @@
+
+# TASK # 3
+# STUDENT SEGMENTATION
+
+print("\n================ TASK # 3 =================\n")
+# SAMPLE STUDENT DATA
+student_data = {
+    'student_id': [101,102,103,104,105,106,107,108,109,110],
+    'GPA': [3.8,2.5,3.2,2.8,3.9,1.9,2.2,3.5,3.0,2.7],
+    'study_hours': [30,10,20,15,35,5,8,25,18,12],
+    'attendance_rate': [95,70,85,75,98,60,65,90,80,72]
+}
+
+students_df = pd.DataFrame(student_data)
+
+print("Original Student Dataset:\n")
+print(students_df)
+
+# ------------------------------------------------------------
+# FEATURE SELECTION
+# ------------------------------------------------------------
+
+X_students = students_df[['GPA',
+                          'study_hours',
+                          'attendance_rate']]
+
+# ------------------------------------------------------------
+# FEATURE SCALING
+# ------------------------------------------------------------
+
+scaler = StandardScaler()
+
+X_students_scaled = scaler.fit_transform(X_students)
+
+# ============================================================
+# ELBOW METHOD
+# ============================================================
+
+inertia = []
+
+K_range = range(2, 7)
+
+for k in K_range:
+    kmeans = KMeans(n_clusters=k, random_state=42)
+    kmeans.fit(X_students_scaled)
+    inertia.append(kmeans.inertia_)
+
+# ------------------------------------------------------------
+# PLOT ELBOW GRAPH
+# ------------------------------------------------------------
+
+plt.figure(figsize=(8,5))
+
+plt.plot(K_range, inertia, marker='o')
+
+plt.title("Elbow Method For Optimal K")
+plt.xlabel("Number of Clusters (K)")
+plt.ylabel("Inertia")
+
+plt.grid(True)
+plt.show()
+
+# ------------------------------------------------------------
+# CHOOSE OPTIMAL K
+# ------------------------------------------------------------
+
+optimal_k = 3
+
+print(f"\nOptimal K selected: {optimal_k}")
+
+# ============================================================
+# APPLY K-MEANS
+# ============================================================
+
+kmeans_students = KMeans(n_clusters=optimal_k, random_state=42)
+
+students_df['Cluster'] = kmeans_students.fit_predict(
+    X_students_scaled
+)
+
+# ============================================================
+# DISPLAY FINAL DATASET
+# ============================================================
+
+print("\nFinal Student Dataset with Clusters:\n")
+print(students_df)
+
+# ============================================================
+# VISUALIZATION
+# ============================================================
+
+plt.figure(figsize=(8,6))
+
+scatter = plt.scatter(
+    students_df['study_hours'],
+    students_df['GPA'],
+    c=students_df['Cluster']
+)
+
+plt.title("Student Clusters based on Study Hours and GPA")
+
+plt.xlabel("Study Hours")
+plt.ylabel("GPA")
+
+plt.grid(True)
+
+plt.show()
+
+# ============================================================
+# FINAL INSIGHTS
+# ============================================================
+
+print("\nINSIGHTS:")
+print("""
+1. Students with high GPA, high attendance,
+   and high study hours form one cluster.
+
+2. Students with medium performance form another cluster.
+
+3. Students with low GPA and low attendance
+   form a separate cluster.
+
+4. The clustering can help the university:
+   - Identify weak students for tutoring.
+   - Provide mentoring support.
+   - Recognize high achievers.
+""")
